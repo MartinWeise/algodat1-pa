@@ -1,2 +1,0 @@
-# Algorithmen und Datenstrukturen
-## Programmieraufgabe
