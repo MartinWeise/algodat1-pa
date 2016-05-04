@@ -62,13 +62,16 @@ public class Network {
      * schon Verbindungen, dann bleiben diese erhalten.
      */
     public void addAllConnections(int v) {
+        int c = 0;
         for(int u : this.G.keySet()) {
             if(!this.G.get(v).contains(u) && u != v) {
+                c++;
                 this.G.get(v).add(u);
                 this.Gu.get(v).add(u);
                 this.Gu.get(u).add(v);
             }
         }
+        this.m += c;
     }
 
     /**
@@ -93,7 +96,8 @@ public class Network {
     public void deleteAllConnections(int v) {
         if(this.G.get(v).size() > 0) {
             this.m -= this.G.get(v).size();
-            this.G.replace(v,new LinkedHashSet<>());
+            this.G.replace(v, new LinkedHashSet<>());
+            this.Gu.replace(v, new LinkedHashSet<>());
         }
     }
 
@@ -260,8 +264,9 @@ public class Network {
 //        network.addConnection(11,12);
 
         Network network = new Network(100);
-        network.addConnection(1,6);
         network.addAllConnections(0);
+        network.deleteConnection(0,1);
+        network.deleteConnection(0,2);
 
 
         System.out.println("numberOfNodes(): " + network.numberOfNodes());
