@@ -4,22 +4,27 @@ import java.util.*;
 
 public class Network {
 
-    private HashMap<Integer, LinkedList<Integer>> A = new HashMap<>();
+    private HashMap<Integer, LinkedHashSet<Integer>> G = new HashMap<>();
+    private HashMap<Integer, LinkedHashSet<Integer>> Gu = new HashMap<>();
     private final int n;
     private int m;
-    private boolean[][] M;
     private boolean[] discovered;
 
+    private int[] low;
+    private int[] pre;
+    private int cnt;
+    private boolean[] articulation;
+
     /**
-     * O(n^2)
+     * O(n)
      * Organisation in Form einer Adjaszenzliste
      */
     public Network(int n) {
         this.n = n;
         this.m = 0;
-        this.M = new boolean[n][n];
         for(int i = 0; i < n; i++) {
-            this.A.put(i, new LinkedList<>());
+            this.G.put(i, new LinkedHashSet<>());
+            this.Gu.put(i, new LinkedHashSet<>());
         }
     }
 
@@ -46,9 +51,9 @@ public class Network {
      */
     public void addConnection(int v, int w) {
         this.m++;
-        this.A.get(v).add(w);
-        this.M[v][w] = true;
-        this.M[w][v] = true;
+        this.G.get(v).add(w);
+        this.Gu.get(v).add(w);
+        this.Gu.get(w).add(v);
     }
 
     /**
@@ -56,9 +61,9 @@ public class Network {
      * schon Verbindungen, dann bleiben diese erhalten.
      */
     public void addAllConnections(int v) {
-        LinkedList<Integer> node = this.A.get(v);
+        LinkedHashSet<Integer> node = this.G.get(v);
         int c = 0;
-        for(int k : this.A.keySet()) {
+        for(int k : this.G.keySet()) {
             if(k == v || node.contains(k)) {
                 return;
             }
@@ -66,6 +71,7 @@ public class Network {
             node.add(k);
         }
         this.m += c;
+        this.G.replace(v, node);
     }
 
     /**
@@ -74,11 +80,11 @@ public class Network {
      * vorhanden, dann passiert nichts.
      */
     public void deleteConnection(int v, int w) {
-        if(this.A.containsKey(v) && this.A.containsKey(w)) {
+        if(this.G.containsKey(v) && this.G.get(v).contains(w)) {
             this.m--;
-            this.A.get(v).remove(w);
-            this.M[v][w] = false;
-            this.M[w][v] = false;
+            this.G.get(v).remove(w);
+            this.Gu.get(v).remove(w);
+            this.Gu.get(w).remove(v);
         }
     }
 
@@ -88,10 +94,9 @@ public class Network {
      * keine Verbindungen, dann passiert nichts.
      */
     public void deleteAllConnections(int v) {
-        if(this.A.containsKey(v)) {
-            this.m -= this.A.get(v).size();
-            this.A.get(v).clear();
-            this.M[v] = new boolean[this.n];
+        if(this.G.get(v).size() > 0) {
+            this.m -= this.G.get(v).size();
+            this.G.replace(v,new LinkedHashSet<>());
         }
     }
 
@@ -100,23 +105,27 @@ public class Network {
      * Liefert die Anzahl der Zusammenhangskomponenten im Netzwerk zurück.
      * Verwendet: DFS
      */
+
+    private int i = 0;
     public int numberOfComponents() {
         this.discovered = new boolean[this.n];
         int c = 0;
-        for(int u : this.A.keySet()) {
-            if(!discovered[u]) {
+        for(int u : this.G.keySet()) {
+            if(!this.discovered[u]) {
                 c++;
-                numberOfComponentsR(u);
+                this.numberOfComponentsR(u);
             }
         }
+        Tester.printDebug("i: " + this.i + ", c: " + c + ", n: " + this.n);
         return c;
     }
 
     private void numberOfComponentsR(int u) {
         this.discovered[u] = true;
-        for(int v : this.A.get(u)) {
-            if(!discovered[v]) {
-                numberOfComponentsR(v);
+        for(int v : this.G.get(u)) {
+            if(!this.discovered[v]) {
+                this.i++;
+                this.numberOfComponentsR(v);
             }
         }
     }
@@ -134,7 +143,7 @@ public class Network {
         Q.add(0);
         while(!Q.isEmpty()) {
             int u = Q.pop();
-            for(int v : this.A.get(u)) {
+            for(int v : this.G.get(u)) {
                 if(!discovered[v]) {
                     discovered[v] = true;
                     Q.add(v);
@@ -152,81 +161,87 @@ public class Network {
      * werden. Sind start und end nicht u ̈ber einen Pfad miteinander verbunden, dann wird -1 zurück-
      * geliefert.
      * Verwendet: Dijkstra's Algorithm
+     * http://algs4.cs.princeton.edu/41graph/BreadthFirstPaths.java.html
      */
     public int minimalNumberOfConnections(int start, int end) {
+        if(this.m < 1) {
+            return -1;
+        }
         if(start == end) {
             return 0;
         }
-        int c = this.numberOfConnections();
-        int[] distance = new int[c];
-        int[] previous = new int[c];
+        int[] distance = new int[this.n];
+        boolean[] discovered = new boolean[this.n];
+        // BFS
+        LinkedList<Integer> Q = new LinkedList<>();
+        distance[start] = 0;
+        discovered[start] = true;
+        Q.add(start);
+        while (!Q.isEmpty()) {
+            int v = Q.pop();
+            for (int w : this.G.get(v)) {
+                if (!discovered[w]) {
+                    distance[w] = distance[v] + 1;
+                    if (w == end) {
+                        return distance[w];
+                    }
+                    discovered[w] = true;
+                    Q.add(w);
+                }
+            }
+        }
         return -1;
     }
 
     /**
      * Liefert eine Liste jener Knoten zurück, die als kritisch eingestuft werden. Ein Knoten ist kritisch, wenn
      * das Entfernen aller Verbindungen zu diesem Knoten nicht nur diesen Knoten isoliert, sondern auch seine
-     * ursprüngliche Zusammenhangskomponente in drei oder mehr Zusammenhangskom- ponenten zerfallen lässt.
+     * ursprüngliche Zusammenhangskomponente in drei oder mehr Zusammenhangskomponenten zerfallen lässt.
      */
     public List<Integer> criticalNodes() {
-        List<Integer> critical = new LinkedList<>();
-        int in = 0, out = 0, u = 0;
-        return critical;
+        low = new int[this.n];
+        pre = new int[this.n];
+        articulation = new boolean[this.n];
+        for (int v = 0; v < this.n; v++) {
+            low[v] = -1;
+            pre[v] = -1;
+        }
+        for(int v = 0; v < this.n; v++) {
+            if (pre[v] == -1) {
+                dfs(v, v);
+            }
+        }
+        List<Integer> L = new LinkedList<>();
+        for(int i = 0; i < this.articulation.length; i++) {
+            if(this.articulation[i]) {
+                L.add(i);
+            }
+        }
+        return L;
     }
 
-//    /**
-//     * O(n+m)
-//     * Reverses the current graph
-//     * @return HashMap
-//     */
-//    private HashMap<Integer, LinkedList<Integer>> reverse() {
-//        HashMap<Integer, LinkedList<Integer>> rev = new HashMap<>();
-//        int k = 0;
-//        for(int i = 0; i < this.A.size(); i++) {
-//            rev.put(i, new LinkedList<>());
-//        }
-//        for(LinkedList<Integer> L : this.A.values()) {
-//            for(int u : L) {
-//                rev.get(u).add(k);
-//            }
-//            k++;
-//        }
-//        return rev;
-//    }
-
-//    /**
-//     * Does a Breath-First-Search on the given Graph
-//     * @param s: Node
-//     * @param G: Graph
-//     * @return discovered: Array
-//     */
-//    private boolean[] BFS(HashMap<Integer, LinkedList<Integer>> G, int s) {
-//        // BFS
-//        boolean[] discovered = new boolean[G.size()];
-//        discovered[s] = true;
-//        LinkedList<Integer> Q = new LinkedList<>();
-//        Q.add(s);
-//        while(!Q.isEmpty()) {
-//            int u = Q.pop();
-//            for(int v : G.get(u)) {
-//                if(!discovered[v]) {
-//                    discovered[v] = true;
-//                    Q.add(v);
-//                }
-//            }
-//        }
-//        return discovered;
-//    }
-
-    /**
-     * Development
-     */
-
-    private void printConnections(HashMap<Integer, LinkedList<Integer>> G) {
-        for(int u : G.keySet()) {
-            for(int v: G.get(u)) {
-                System.out.println(u + " -> " + v);
+    private void dfs(int u, int v) {
+        int children = 0;
+        pre[v] = cnt++;
+        low[v] = pre[v];
+        for(int w : this.Gu.get(v)) {
+            if(pre[w] == -1) {
+                children++;
+                dfs(v, w);
+                // update low number
+                low[v] = Math.min(low[v], low[w]);
+                // non-root of DFS is an articulation point if low[w] >= pre[v]
+                if(low[w] >= pre[v] && u != v) {
+                    articulation[v] = true;
+                }
+            } else if(w != u) { // update low number - ignore reverse of edge leading to v
+                low[v] = Math.min(low[v], pre[w]);
             }
+        }
+
+        // root of DFS is an articulation point if it has more than 1 child
+        if (u == v && children > 1) {
+            articulation[v] = true;
         }
     }
 
@@ -250,7 +265,7 @@ public class Network {
         network.addConnection(10,11);
         network.addConnection(11,12);
 
-//        Network network = new Network(7);
+//        Network network = new Network(100);
 //        network.addConnection(0,1);
 //        network.addConnection(1,2);
 //        network.addConnection(2,3);
@@ -262,8 +277,9 @@ public class Network {
         System.out.println("numberOfConnections(): " + network.numberOfConnections());
         System.out.println("numberOfComponents(): " + network.numberOfComponents());
         System.out.println("hasCycle(): " + network.hasCycle());
-        System.out.println("minimalNumberOfConnections(0,7): " + network.minimalNumberOfConnections(0,7));
-//        System.out.println(network.minimalNumberOfConnections(0,9));
+        System.out.println("minimalNumberOfConnections(0,5): " + network.minimalNumberOfConnections(0,5));
+        System.out.println("minimalNumberOfConnections(0,9): " + network.minimalNumberOfConnections(0,9));
+        System.out.println("criticalNodes(): " + network.criticalNodes());
 
     }
 }
