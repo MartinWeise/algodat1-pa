@@ -4,8 +4,8 @@ import java.util.*;
 
 public class Network {
 
-    private HashMap<Integer, LinkedHashSet<Integer>> A = new HashMap<>();
-    private HashMap<Integer, LinkedHashSet<Integer>> Au = new HashMap<>();
+    private HashMap<Integer, LinkedHashSet<Integer>> G = new HashMap<>();
+    private HashMap<Integer, LinkedHashSet<Integer>> Gu = new HashMap<>();
     private final int n;
     private int m;
     private boolean[] discovered;
@@ -16,15 +16,15 @@ public class Network {
     private boolean[] articulation;
 
     /**
-     * O(n^2)
+     * O(n)
      * Organisation in Form einer Adjaszenzliste
      */
     public Network(int n) {
         this.n = n;
         this.m = 0;
         for(int i = 0; i < n; i++) {
-            this.A.put(i, new LinkedHashSet<>());
-            this.Au.put(i, new LinkedHashSet<>());
+            this.G.put(i, new LinkedHashSet<>());
+            this.Gu.put(i, new LinkedHashSet<>());
         }
     }
 
@@ -51,27 +51,24 @@ public class Network {
      */
     public void addConnection(int v, int w) {
         this.m++;
-        this.A.get(v).add(w);
-        this.Au.get(v).add(w);
-        this.Au.get(w).add(v);
+        this.G.get(v).add(w);
+        this.Gu.get(v).add(w);
+        this.Gu.get(w).add(v);
     }
 
     /**
+     * O(n)
      * Fügt Verbindungen von einem bestimmten Knoten v zu allen anderen Knoten ein. Hatte der Knoten
      * schon Verbindungen, dann bleiben diese erhalten.
      */
     public void addAllConnections(int v) {
-        LinkedHashSet<Integer> node = this.A.get(v);
-        int c = 0;
-        for(int k : this.A.keySet()) {
-            if(k == v || node.contains(k)) {
-                return;
+        for(int u : this.G.keySet()) {
+            if(!this.G.get(v).contains(u) && u != v) {
+                this.G.get(v).add(u);
+                this.Gu.get(v).add(u);
+                this.Gu.get(u).add(v);
             }
-            c++;
-            node.add(k);
         }
-        this.m += c;
-        this.A.replace(v, node);
     }
 
     /**
@@ -80,11 +77,11 @@ public class Network {
      * vorhanden, dann passiert nichts.
      */
     public void deleteConnection(int v, int w) {
-        if(this.A.containsKey(v) && this.A.get(v).contains(w)) {
+        if(this.G.containsKey(v) && this.G.get(v).contains(w)) {
             this.m--;
-            this.A.get(v).remove(w);
-            this.Au.get(v).remove(w);
-            // todo : delete nodes of Au efficient
+            this.G.get(v).remove(w);
+            this.Gu.get(v).remove(w);
+            this.Gu.get(w).remove(v);
         }
     }
 
@@ -94,9 +91,9 @@ public class Network {
      * keine Verbindungen, dann passiert nichts.
      */
     public void deleteAllConnections(int v) {
-        if(this.A.containsKey(v)) {
-            this.m -= this.A.get(v).size();
-            this.A.get(v).clear();
+        if(this.G.get(v).size() > 0) {
+            this.m -= this.G.get(v).size();
+            this.G.replace(v,new LinkedHashSet<>());
         }
     }
 
@@ -105,13 +102,14 @@ public class Network {
      * Liefert die Anzahl der Zusammenhangskomponenten im Netzwerk zurück.
      * Verwendet: DFS
      */
+
     public int numberOfComponents() {
         this.discovered = new boolean[this.n];
         int c = 0;
-        for(int u : this.A.keySet()) {
-            if(!discovered[u]) {
+        for (int u : this.Gu.keySet()) {
+            if (!this.discovered[u]) {
                 c++;
-                numberOfComponentsR(u);
+                this.numberOfComponentsR(u);
             }
         }
         return c;
@@ -119,9 +117,9 @@ public class Network {
 
     private void numberOfComponentsR(int u) {
         this.discovered[u] = true;
-        for(int v : this.A.get(u)) {
-            if(!discovered[v]) {
-                numberOfComponentsR(v);
+        for(int v : this.Gu.get(u)) {
+            if(!this.discovered[v]) {
+                this.numberOfComponentsR(v);
             }
         }
     }
@@ -139,7 +137,7 @@ public class Network {
         Q.add(0);
         while(!Q.isEmpty()) {
             int u = Q.pop();
-            for(int v : this.A.get(u)) {
+            for(int v : this.G.get(u)) {
                 if(!discovered[v]) {
                     discovered[v] = true;
                     Q.add(v);
@@ -175,7 +173,7 @@ public class Network {
         Q.add(start);
         while (!Q.isEmpty()) {
             int v = Q.pop();
-            for (int w : this.A.get(v)) {
+            for (int w : this.G.get(v)) {
                 if (!discovered[w]) {
                     distance[w] = distance[v] + 1;
                     if (w == end) {
@@ -198,14 +196,15 @@ public class Network {
         low = new int[this.n];
         pre = new int[this.n];
         articulation = new boolean[this.n];
-        for (int v = 0; v < this.n; v++)
+        for (int v = 0; v < this.n; v++) {
             low[v] = -1;
-        for (int v = 0; v < this.n; v++)
             pre[v] = -1;
-
-        for (int v = 0; v < this.n; v++)
-            if (pre[v] == -1)
+        }
+        for(int v = 0; v < this.n; v++) {
+            if (pre[v] == -1) {
                 dfs(v, v);
+            }
+        }
         List<Integer> L = new LinkedList<>();
         for(int i = 0; i < this.articulation.length; i++) {
             if(this.articulation[i]) {
@@ -215,61 +214,55 @@ public class Network {
         return L;
     }
 
-    // todo: make this your own
     private void dfs(int u, int v) {
         int children = 0;
         pre[v] = cnt++;
         low[v] = pre[v];
-        for (int w : this.Au.get(v)) {
-            if (pre[w] == -1) {
+        for(int w : this.Gu.get(v)) {
+            if(pre[w] == -1) {
                 children++;
                 dfs(v, w);
-
                 // update low number
                 low[v] = Math.min(low[v], low[w]);
-
                 // non-root of DFS is an articulation point if low[w] >= pre[v]
-                if (low[w] >= pre[v] && u != v)
+                if(low[w] >= pre[v] && u != v) {
                     articulation[v] = true;
-            }
-
-            // update low number - ignore reverse of edge leading to v
-            else if (w != u)
+                }
+            } else if(w != u) { // update low number - ignore reverse of edge leading to v
                 low[v] = Math.min(low[v], pre[w]);
+            }
         }
 
         // root of DFS is an articulation point if it has more than 1 child
-        if (u == v && children > 1)
+        if (u == v && children > 1) {
             articulation[v] = true;
+        }
     }
 
     public static void main(String[] args) {
-        Network network = new Network(13);
-        network.addConnection(0,1);
-        network.addConnection(0,2);
-        network.addConnection(0,6);
-        network.addConnection(1,2);
-        network.addConnection(1,3);
-        network.addConnection(1,4);
-        network.addConnection(2,4);
-        network.addConnection(2,6);
-        network.addConnection(2,7);
-        network.addConnection(3,4);
-        network.addConnection(4,5);
-        network.addConnection(6,7);
-        network.addConnection(8,9);
-        network.addConnection(8,10);
-        network.addConnection(9,10);
-        network.addConnection(10,11);
-        network.addConnection(11,12);
-
-//        Network network = new Network(100);
+//        Network network = new Network(13);
 //        network.addConnection(0,1);
+//        network.addConnection(0,2);
+//        network.addConnection(0,6);
 //        network.addConnection(1,2);
-//        network.addConnection(2,3);
+//        network.addConnection(1,3);
+//        network.addConnection(1,4);
+//        network.addConnection(2,4);
+//        network.addConnection(2,6);
+//        network.addConnection(2,7);
 //        network.addConnection(3,4);
 //        network.addConnection(4,5);
-//        network.addConnection(5,6);
+//        network.addConnection(6,7);
+//        network.addConnection(8,9);
+//        network.addConnection(8,10);
+//        network.addConnection(9,10);
+//        network.addConnection(10,11);
+//        network.addConnection(11,12);
+
+        Network network = new Network(100);
+        network.addConnection(1,6);
+        network.addAllConnections(0);
+
 
         System.out.println("numberOfNodes(): " + network.numberOfNodes());
         System.out.println("numberOfConnections(): " + network.numberOfConnections());
