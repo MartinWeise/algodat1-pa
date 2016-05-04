@@ -4,11 +4,10 @@ import java.util.*;
 
 public class Network {
 
-    private HashMap<Integer, LinkedList<Integer>> A = new HashMap<>();
-    private HashMap<Integer, LinkedList<Integer>> Au = new HashMap<>();
+    private HashMap<Integer, LinkedHashSet<Integer>> A = new HashMap<>();
+    private HashMap<Integer, LinkedHashSet<Integer>> Au = new HashMap<>();
     private final int n;
     private int m;
-    private boolean[][] M;
     private boolean[] discovered;
 
     private int[] low;
@@ -23,10 +22,9 @@ public class Network {
     public Network(int n) {
         this.n = n;
         this.m = 0;
-        this.M = new boolean[n][n];
         for(int i = 0; i < n; i++) {
-            this.A.put(i, new LinkedList<>());
-            this.Au.put(i, new LinkedList<>());
+            this.A.put(i, new LinkedHashSet<>());
+            this.Au.put(i, new LinkedHashSet<>());
         }
     }
 
@@ -56,8 +54,6 @@ public class Network {
         this.A.get(v).add(w);
         this.Au.get(v).add(w);
         this.Au.get(w).add(v);
-        this.M[v][w] = true;
-        this.M[w][v] = true;
     }
 
     /**
@@ -65,7 +61,7 @@ public class Network {
      * schon Verbindungen, dann bleiben diese erhalten.
      */
     public void addAllConnections(int v) {
-        LinkedList<Integer> node = this.A.get(v);
+        LinkedHashSet<Integer> node = this.A.get(v);
         int c = 0;
         for(int k : this.A.keySet()) {
             if(k == v || node.contains(k)) {
@@ -75,6 +71,7 @@ public class Network {
             node.add(k);
         }
         this.m += c;
+        this.A.replace(v, node);
     }
 
     /**
@@ -83,11 +80,11 @@ public class Network {
      * vorhanden, dann passiert nichts.
      */
     public void deleteConnection(int v, int w) {
-        if(this.A.containsKey(v) && this.A.containsKey(w)) {
+        if(this.A.containsKey(v) && this.A.get(v).contains(w)) {
             this.m--;
             this.A.get(v).remove(w);
-            this.M[v][w] = false;
-            this.M[w][v] = false;
+            this.Au.get(v).remove(w);
+            // todo : delete nodes of Au efficient
         }
     }
 
@@ -100,7 +97,6 @@ public class Network {
         if(this.A.containsKey(v)) {
             this.m -= this.A.get(v).size();
             this.A.get(v).clear();
-            this.M[v] = new boolean[this.n];
         }
     }
 
@@ -164,12 +160,14 @@ public class Network {
      * http://algs4.cs.princeton.edu/41graph/BreadthFirstPaths.java.html
      */
     public int minimalNumberOfConnections(int start, int end) {
+        if(this.m < 1) {
+            return -1;
+        }
         if(start == end) {
             return 0;
         }
-        int c = this.numberOfConnections();
-        int[] distance = new int[c];
-        discovered = new boolean[this.n];
+        int[] distance = new int[this.n];
+        boolean[] discovered = new boolean[this.n];
         // BFS
         LinkedList<Integer> Q = new LinkedList<>();
         distance[start] = 0;
@@ -180,7 +178,7 @@ public class Network {
             for (int w : this.A.get(v)) {
                 if (!discovered[w]) {
                     distance[w] = distance[v] + 1;
-                    if(w == end) {
+                    if (w == end) {
                         return distance[w];
                     }
                     discovered[w] = true;
@@ -265,7 +263,7 @@ public class Network {
         network.addConnection(10,11);
         network.addConnection(11,12);
 
-//        Network network = new Network(7);
+//        Network network = new Network(100);
 //        network.addConnection(0,1);
 //        network.addConnection(1,2);
 //        network.addConnection(2,3);

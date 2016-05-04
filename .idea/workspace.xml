@@ -2,6 +2,8 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="186eb28a-7596-4342-b081-ef1d0519dbb4" name="Default" comment="">
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/out/production/Programmieraufgabe/ad1/ss16/pa/Network.class" afterPath="$PROJECT_DIR$/out/production/Programmieraufgabe/ad1/ss16/pa/Network.class" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/ad1/ss16/pa/Network.java" afterPath="$PROJECT_DIR$/ad1/ss16/pa/Network.java" />
     </list>
     <ignored path="Programmieraufgabe.iws" />
@@ -28,8 +30,8 @@
       <file leaf-file-name="Network.java" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/ad1/ss16/pa/Network.java">
           <provider selected="true" editor-type-id="text-editor">
-            <state vertical-scroll-proportion="0.8863636">
-              <caret line="220" column="4" selection-start-line="220" selection-start-column="4" selection-end-line="220" selection-end-column="4" />
+            <state vertical-scroll-proportion="0.6136364">
+              <caret line="271" column="29" selection-start-line="265" selection-start-column="29" selection-end-line="271" selection-end-column="29" />
               <folding />
             </state>
           </provider>
@@ -633,6 +635,21 @@
       <envs />
       <method />
     </configuration>
+    <configuration default="false" name="Tester 2" type="Application" factoryName="Application">
+      <extension name="coverage" enabled="false" merge="false" sample_coverage="true" runner="idea" />
+      <option name="MAIN_CLASS_NAME" value="ad1.ss16.pa.Tester" />
+      <option name="VM_PARAMETERS" value="" />
+      <option name="PROGRAM_PARAMETERS" value="-d Instances/0002" />
+      <option name="WORKING_DIRECTORY" value="file://$PROJECT_DIR$" />
+      <option name="ALTERNATIVE_JRE_PATH_ENABLED" value="false" />
+      <option name="ALTERNATIVE_JRE_PATH" />
+      <option name="ENABLE_SWING_INSPECTOR" value="false" />
+      <option name="ENV_VARIABLES" />
+      <option name="PASS_PARENT_ENVS" value="true" />
+      <module name="Programmieraufgabe" />
+      <envs />
+      <method />
+    </configuration>
     <configuration default="false" name="Tester 3" type="Application" factoryName="Application">
       <extension name="coverage" enabled="false" merge="false" sample_coverage="true" runner="idea" />
       <option name="MAIN_CLASS_NAME" value="ad1.ss16.pa.Tester" />
@@ -663,12 +680,13 @@
       <envs />
       <method />
     </configuration>
-    <list size="5">
+    <list size="6">
       <item index="0" class="java.lang.String" itemvalue="Application.Network" />
       <item index="1" class="java.lang.String" itemvalue="Application.Tester 0" />
       <item index="2" class="java.lang.String" itemvalue="Application.Tester 1" />
-      <item index="3" class="java.lang.String" itemvalue="Application.Tester 3" />
-      <item index="4" class="java.lang.String" itemvalue="Application.Tester My" />
+      <item index="3" class="java.lang.String" itemvalue="Application.Tester 2" />
+      <item index="4" class="java.lang.String" itemvalue="Application.Tester 3" />
+      <item index="5" class="java.lang.String" itemvalue="Application.Tester My" />
     </list>
   </component>
   <component name="ShelveChangesManager" show_recycled="false" />
@@ -686,12 +704,12 @@
       <workItem from="1462201444090" duration="203000" />
       <workItem from="1462219496545" duration="2315000" />
       <workItem from="1462348430456" duration="4393000" />
-      <workItem from="1462367585655" duration="833000" />
+      <workItem from="1462367585655" duration="3962000" />
     </task>
     <servers />
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="28891000" />
+    <option name="totallyTimeSpent" value="32020000" />
   </component>
   <component name="ToolWindowManager">
     <frame x="0" y="23" width="1280" height="729" extended-state="6" />
@@ -768,14 +786,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/ad1/ss16/pa/Tester.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.3318182">
-          <caret line="14" column="13" selection-start-line="14" selection-start-column="13" selection-end-line="14" selection-end-column="13" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
     <entry file="jar:///Library/Java/JavaVirtualMachines/jdk1.8.0_60.jdk/Contents/Home/src.zip!/java/util/LinkedList.java">
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.024549918">
@@ -802,10 +812,42 @@
         </state>
       </provider>
     </entry>
+    <entry file="file://$PROJECT_DIR$/Instances/0001">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="-17.045454">
+          <caret line="0" column="0" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/ad1/ss16/pa/Tester.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.3318182">
+          <caret line="262" column="0" selection-start-line="262" selection-start-column="0" selection-end-line="262" selection-end-column="0" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/Instances/0004">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="-100.77273">
+          <caret line="0" column="0" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/Instances/0003">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.0">
+          <caret line="0" column="0" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
     <entry file="file://$PROJECT_DIR$/ad1/ss16/pa/Network.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.8863636">
-          <caret line="220" column="4" selection-start-line="220" selection-start-column="4" selection-end-line="220" selection-end-column="4" />
+        <state vertical-scroll-proportion="0.6136364">
+          <caret line="271" column="29" selection-start-line="265" selection-start-column="29" selection-end-line="271" selection-end-column="29" />
           <folding />
         </state>
       </provider>
