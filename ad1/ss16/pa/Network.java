@@ -5,10 +5,16 @@ import java.util.*;
 public class Network {
 
     private HashMap<Integer, LinkedList<Integer>> A = new HashMap<>();
+    private HashMap<Integer, LinkedList<Integer>> Au = new HashMap<>();
     private final int n;
     private int m;
     private boolean[][] M;
     private boolean[] discovered;
+
+    private int[] low;
+    private int[] pre;
+    private int cnt;
+    private boolean[] articulation;
 
     /**
      * O(n^2)
@@ -20,6 +26,7 @@ public class Network {
         this.M = new boolean[n][n];
         for(int i = 0; i < n; i++) {
             this.A.put(i, new LinkedList<>());
+            this.Au.put(i, new LinkedList<>());
         }
     }
 
@@ -47,6 +54,8 @@ public class Network {
     public void addConnection(int v, int w) {
         this.m++;
         this.A.get(v).add(w);
+        this.Au.get(v).add(w);
+        this.Au.get(w).add(v);
         this.M[v][w] = true;
         this.M[w][v] = true;
     }
@@ -185,68 +194,55 @@ public class Network {
     /**
      * Liefert eine Liste jener Knoten zurück, die als kritisch eingestuft werden. Ein Knoten ist kritisch, wenn
      * das Entfernen aller Verbindungen zu diesem Knoten nicht nur diesen Knoten isoliert, sondern auch seine
-     * ursprüngliche Zusammenhangskomponente in drei oder mehr Zusammenhangskom- ponenten zerfallen lässt.
+     * ursprüngliche Zusammenhangskomponente in drei oder mehr Zusammenhangskomponenten zerfallen lässt.
      */
     public List<Integer> criticalNodes() {
-        List<Integer> critical = new LinkedList<>();
-        int in = 0, out = 0, u = 0;
-        return critical;
-    }
+        low = new int[this.n];
+        pre = new int[this.n];
+        articulation = new boolean[this.n];
+        for (int v = 0; v < this.n; v++)
+            low[v] = -1;
+        for (int v = 0; v < this.n; v++)
+            pre[v] = -1;
 
-//    /**
-//     * O(n+m)
-//     * Reverses the current graph
-//     * @return HashMap
-//     */
-//    private HashMap<Integer, LinkedList<Integer>> reverse() {
-//        HashMap<Integer, LinkedList<Integer>> rev = new HashMap<>();
-//        int k = 0;
-//        for(int i = 0; i < this.A.size(); i++) {
-//            rev.put(i, new LinkedList<>());
-//        }
-//        for(LinkedList<Integer> L : this.A.values()) {
-//            for(int u : L) {
-//                rev.get(u).add(k);
-//            }
-//            k++;
-//        }
-//        return rev;
-//    }
-
-//    /**
-//     * Does a Breath-First-Search on the given Graph
-//     * @param s: Node
-//     * @param G: Graph
-//     * @return discovered: Array
-//     */
-//    private boolean[] BFS(HashMap<Integer, LinkedList<Integer>> G, int s) {
-//        // BFS
-//        boolean[] discovered = new boolean[G.size()];
-//        discovered[s] = true;
-//        LinkedList<Integer> Q = new LinkedList<>();
-//        Q.add(s);
-//        while(!Q.isEmpty()) {
-//            int u = Q.pop();
-//            for(int v : G.get(u)) {
-//                if(!discovered[v]) {
-//                    discovered[v] = true;
-//                    Q.add(v);
-//                }
-//            }
-//        }
-//        return discovered;
-//    }
-
-    /**
-     * Development
-     */
-
-    private void printConnections(HashMap<Integer, LinkedList<Integer>> G) {
-        for(int u : G.keySet()) {
-            for(int v: G.get(u)) {
-                System.out.println(u + " -> " + v);
+        for (int v = 0; v < this.n; v++)
+            if (pre[v] == -1)
+                dfs(v, v);
+        List<Integer> L = new LinkedList<>();
+        for(int i = 0; i < this.articulation.length; i++) {
+            if(this.articulation[i]) {
+                L.add(i);
             }
         }
+        return L;
+    }
+
+    // todo: make this your own
+    private void dfs(int u, int v) {
+        int children = 0;
+        pre[v] = cnt++;
+        low[v] = pre[v];
+        for (int w : this.Au.get(v)) {
+            if (pre[w] == -1) {
+                children++;
+                dfs(v, w);
+
+                // update low number
+                low[v] = Math.min(low[v], low[w]);
+
+                // non-root of DFS is an articulation point if low[w] >= pre[v]
+                if (low[w] >= pre[v] && u != v)
+                    articulation[v] = true;
+            }
+
+            // update low number - ignore reverse of edge leading to v
+            else if (w != u)
+                low[v] = Math.min(low[v], pre[w]);
+        }
+
+        // root of DFS is an articulation point if it has more than 1 child
+        if (u == v && children > 1)
+            articulation[v] = true;
     }
 
     public static void main(String[] args) {
@@ -281,8 +277,9 @@ public class Network {
         System.out.println("numberOfConnections(): " + network.numberOfConnections());
         System.out.println("numberOfComponents(): " + network.numberOfComponents());
         System.out.println("hasCycle(): " + network.hasCycle());
-        System.out.println("minimalNumberOfConnections(0,7): " + network.minimalNumberOfConnections(0,7));
-//        System.out.println(network.minimalNumberOfConnections(0,9));
+        System.out.println("minimalNumberOfConnections(0,5): " + network.minimalNumberOfConnections(0,5));
+        System.out.println("minimalNumberOfConnections(0,9): " + network.minimalNumberOfConnections(0,9));
+        System.out.println("criticalNodes(): " + network.criticalNodes());
 
     }
 }
