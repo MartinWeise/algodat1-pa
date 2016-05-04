@@ -57,21 +57,18 @@ public class Network {
     }
 
     /**
+     * O(n)
      * Fügt Verbindungen von einem bestimmten Knoten v zu allen anderen Knoten ein. Hatte der Knoten
      * schon Verbindungen, dann bleiben diese erhalten.
      */
     public void addAllConnections(int v) {
-        LinkedHashSet<Integer> node = this.G.get(v);
-        int c = 0;
-        for(int k : this.G.keySet()) {
-            if(k == v || node.contains(k)) {
-                return;
+        for(int u : this.G.keySet()) {
+            if(!this.G.get(v).contains(u) && u != v) {
+                this.G.get(v).add(u);
+                this.Gu.get(v).add(u);
+                this.Gu.get(u).add(v);
             }
-            c++;
-            node.add(k);
         }
-        this.m += c;
-        this.G.replace(v, node);
     }
 
     /**
@@ -106,25 +103,22 @@ public class Network {
      * Verwendet: DFS
      */
 
-    private int i = 0;
     public int numberOfComponents() {
         this.discovered = new boolean[this.n];
         int c = 0;
-        for(int u : this.G.keySet()) {
-            if(!this.discovered[u]) {
+        for (int u : this.Gu.keySet()) {
+            if (!this.discovered[u]) {
                 c++;
                 this.numberOfComponentsR(u);
             }
         }
-        Tester.printDebug("i: " + this.i + ", c: " + c + ", n: " + this.n);
         return c;
     }
 
     private void numberOfComponentsR(int u) {
         this.discovered[u] = true;
-        for(int v : this.G.get(u)) {
+        for(int v : this.Gu.get(u)) {
             if(!this.discovered[v]) {
-                this.i++;
                 this.numberOfComponentsR(v);
             }
         }
@@ -246,32 +240,29 @@ public class Network {
     }
 
     public static void main(String[] args) {
-        Network network = new Network(13);
-        network.addConnection(0,1);
-        network.addConnection(0,2);
-        network.addConnection(0,6);
-        network.addConnection(1,2);
-        network.addConnection(1,3);
-        network.addConnection(1,4);
-        network.addConnection(2,4);
-        network.addConnection(2,6);
-        network.addConnection(2,7);
-        network.addConnection(3,4);
-        network.addConnection(4,5);
-        network.addConnection(6,7);
-        network.addConnection(8,9);
-        network.addConnection(8,10);
-        network.addConnection(9,10);
-        network.addConnection(10,11);
-        network.addConnection(11,12);
-
-//        Network network = new Network(100);
+//        Network network = new Network(13);
 //        network.addConnection(0,1);
+//        network.addConnection(0,2);
+//        network.addConnection(0,6);
 //        network.addConnection(1,2);
-//        network.addConnection(2,3);
+//        network.addConnection(1,3);
+//        network.addConnection(1,4);
+//        network.addConnection(2,4);
+//        network.addConnection(2,6);
+//        network.addConnection(2,7);
 //        network.addConnection(3,4);
 //        network.addConnection(4,5);
-//        network.addConnection(5,6);
+//        network.addConnection(6,7);
+//        network.addConnection(8,9);
+//        network.addConnection(8,10);
+//        network.addConnection(9,10);
+//        network.addConnection(10,11);
+//        network.addConnection(11,12);
+
+        Network network = new Network(100);
+        network.addConnection(1,6);
+        network.addAllConnections(0);
+
 
         System.out.println("numberOfNodes(): " + network.numberOfNodes());
         System.out.println("numberOfConnections(): " + network.numberOfConnections());
