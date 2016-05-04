@@ -152,6 +152,7 @@ public class Network {
      * werden. Sind start und end nicht u ̈ber einen Pfad miteinander verbunden, dann wird -1 zurück-
      * geliefert.
      * Verwendet: Dijkstra's Algorithm
+     * http://algs4.cs.princeton.edu/41graph/BreadthFirstPaths.java.html
      */
     public int minimalNumberOfConnections(int start, int end) {
         if(start == end) {
@@ -159,7 +160,25 @@ public class Network {
         }
         int c = this.numberOfConnections();
         int[] distance = new int[c];
-        int[] previous = new int[c];
+        discovered = new boolean[this.n];
+        // BFS
+        LinkedList<Integer> Q = new LinkedList<>();
+        distance[start] = 0;
+        discovered[start] = true;
+        Q.add(start);
+        while (!Q.isEmpty()) {
+            int v = Q.pop();
+            for (int w : this.A.get(v)) {
+                if (!discovered[w]) {
+                    distance[w] = distance[v] + 1;
+                    if(w == end) {
+                        return distance[w];
+                    }
+                    discovered[w] = true;
+                    Q.add(w);
+                }
+            }
+        }
         return -1;
     }
 
