@@ -1,5 +1,7 @@
 package ad1.ss16.pa;
 
+import sun.awt.image.ImageWatched;
+
 import java.util.*;
 
 public class Network {
@@ -14,6 +16,7 @@ public class Network {
     private int[] pre;
     private int cnt;
     private boolean[] articulation;
+    private Stack<Integer> cycle;
 
     /**
      * O(n)
@@ -98,6 +101,9 @@ public class Network {
             this.m -= this.G.get(v).size();
             this.G.replace(v, new LinkedHashSet<>());
             this.Gu.replace(v, new LinkedHashSet<>());
+            for(int i = 0; i < this.n; i++) {
+                this.Gu.get(i).remove(v);
+            }
         }
     }
 
@@ -135,19 +141,22 @@ public class Network {
      * Verwendet: BFS
      */
     public boolean hasCycle() {
-        boolean[] discovered = new boolean[this.n];
-        discovered[0] = true;
-        LinkedList<Integer> Q = new LinkedList<>();
-        Q.add(0);
-        while(!Q.isEmpty()) {
-            int u = Q.pop();
-            for(int v : this.G.get(u)) {
-                if(!discovered[v]) {
-                    discovered[v] = true;
-                    Q.add(v);
-                } else {
-                    return true;
-                }
+        this.discovered = new boolean[this.n];
+        for (int u : this.Gu.keySet()) {
+            if(!this.discovered[u] && hasCycleR(u)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private boolean hasCycleR(int u) {
+        this.discovered[u] = true;
+        for (int v : this.Gu.get(u)) {
+            if (!this.discovered[v]) {
+                hasCycleR(v);
+            } else {
+                return true;
             }
         }
         return false;
@@ -159,7 +168,7 @@ public class Network {
      * werden. Sind start und end nicht u ̈ber einen Pfad miteinander verbunden, dann wird -1 zurück-
      * geliefert.
      * Verwendet: Dijkstra's Algorithm
-     * http://algs4.cs.princeton.edu/41graph/BreadthFirstPaths.java.html
+     *
      */
     public int minimalNumberOfConnections(int start, int end) {
         if(this.m < 1) {
@@ -177,7 +186,7 @@ public class Network {
         Q.add(start);
         while (!Q.isEmpty()) {
             int v = Q.pop();
-            for (int w : this.G.get(v)) {
+            for (int w : this.Gu.get(v)) {
                 if (!discovered[w]) {
                     distance[w] = distance[v] + 1;
                     if (w == end) {
@@ -197,16 +206,16 @@ public class Network {
      * ursprüngliche Zusammenhangskomponente in drei oder mehr Zusammenhangskomponenten zerfallen lässt.
      */
     public List<Integer> criticalNodes() {
-        low = new int[this.n];
-        pre = new int[this.n];
-        articulation = new boolean[this.n];
+        this.low = new int[this.n];
+        this.pre = new int[this.n];
+        this.articulation = new boolean[this.n];
         for (int v = 0; v < this.n; v++) {
-            low[v] = -1;
-            pre[v] = -1;
+            this.low[v] = -1;
+            this.pre[v] = -1;
         }
         for(int v = 0; v < this.n; v++) {
-            if (pre[v] == -1) {
-                dfs(v, v);
+            if (this.pre[v] == -1) {
+                criticalNodesR(v, v);
             }
         }
         List<Integer> L = new LinkedList<>();
@@ -218,55 +227,55 @@ public class Network {
         return L;
     }
 
-    private void dfs(int u, int v) {
+    private void criticalNodesR(int u, int v) {
         int children = 0;
-        pre[v] = cnt++;
-        low[v] = pre[v];
+        this.pre[v] = this.cnt++;
+        this.low[v] = this.pre[v];
         for(int w : this.Gu.get(v)) {
-            if(pre[w] == -1) {
+            if(this.pre[w] == -1) {
                 children++;
-                dfs(v, w);
+                criticalNodesR(v, w);
                 // update low number
-                low[v] = Math.min(low[v], low[w]);
+                this.low[v] = Math.min(this.low[v], this.low[w]);
                 // non-root of DFS is an articulation point if low[w] >= pre[v]
-                if(low[w] >= pre[v] && u != v) {
-                    articulation[v] = true;
+                if(this.low[w] >= this.pre[v] && u != v) {
+                    this.articulation[v] = true;
                 }
             } else if(w != u) { // update low number - ignore reverse of edge leading to v
-                low[v] = Math.min(low[v], pre[w]);
+                this.low[v] = Math.min(this.low[v], this.pre[w]);
             }
         }
 
         // root of DFS is an articulation point if it has more than 1 child
         if (u == v && children > 1) {
-            articulation[v] = true;
+            this.articulation[v] = true;
         }
     }
 
     public static void main(String[] args) {
-//        Network network = new Network(13);
-//        network.addConnection(0,1);
-//        network.addConnection(0,2);
-//        network.addConnection(0,6);
-//        network.addConnection(1,2);
-//        network.addConnection(1,3);
-//        network.addConnection(1,4);
-//        network.addConnection(2,4);
-//        network.addConnection(2,6);
-//        network.addConnection(2,7);
-//        network.addConnection(3,4);
-//        network.addConnection(4,5);
-//        network.addConnection(6,7);
-//        network.addConnection(8,9);
-//        network.addConnection(8,10);
-//        network.addConnection(9,10);
-//        network.addConnection(10,11);
-//        network.addConnection(11,12);
+        Network network = new Network(13);
+        network.addConnection(0,1);
+        network.addConnection(0,2);
+        network.addConnection(0,6);
+        network.addConnection(1,2);
+        network.addConnection(1,3);
+        network.addConnection(1,4);
+        network.addConnection(2,4);
+        network.addConnection(2,6);
+        network.addConnection(2,7);
+        network.addConnection(3,4);
+        network.addConnection(4,5);
+        network.addConnection(6,7);
+        network.addConnection(8,9);
+        network.addConnection(8,10);
+        network.addConnection(9,10);
+        network.addConnection(10,11);
+        network.addConnection(11,12);
 
-        Network network = new Network(100);
-        network.addAllConnections(0);
-        network.deleteConnection(0,1);
-        network.deleteConnection(0,2);
+//        Network network = new Network(100);
+//        network.addAllConnections(0);
+//        network.deleteConnection(0,1);
+//        network.deleteConnection(0,2);
 
 
         System.out.println("numberOfNodes(): " + network.numberOfNodes());
