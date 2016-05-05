@@ -1,13 +1,10 @@
 package ad1.ss16.pa;
 
-import sun.awt.image.ImageWatched;
-
 import java.util.*;
 
 public class Network {
 
     private HashMap<Integer, LinkedHashSet<Integer>> G = new HashMap<>();
-    private HashMap<Integer, LinkedHashSet<Integer>> Gu = new HashMap<>();
     private final int n;
     private int m;
     private boolean[] discovered;
@@ -16,7 +13,6 @@ public class Network {
     private int[] pre;
     private int cnt;
     private boolean[] articulation;
-    private Stack<Integer> cycle;
 
     /**
      * O(n)
@@ -27,7 +23,6 @@ public class Network {
         this.m = 0;
         for(int i = 0; i < n; i++) {
             this.G.put(i, new LinkedHashSet<>());
-            this.Gu.put(i, new LinkedHashSet<>());
         }
     }
 
@@ -55,8 +50,7 @@ public class Network {
     public void addConnection(int v, int w) {
         this.m++;
         this.G.get(v).add(w);
-        this.Gu.get(v).add(w);
-        this.Gu.get(w).add(v);
+        this.G.get(w).add(v);
     }
 
     /**
@@ -70,8 +64,7 @@ public class Network {
             if(!this.G.get(v).contains(u) && u != v) {
                 c++;
                 this.G.get(v).add(u);
-                this.Gu.get(v).add(u);
-                this.Gu.get(u).add(v);
+                this.G.get(u).add(v);
             }
         }
         this.m += c;
@@ -86,8 +79,7 @@ public class Network {
         if(this.G.containsKey(v) && this.G.get(v).contains(w)) {
             this.m--;
             this.G.get(v).remove(w);
-            this.Gu.get(v).remove(w);
-            this.Gu.get(w).remove(v);
+            this.G.get(w).remove(v);
         }
     }
 
@@ -100,9 +92,8 @@ public class Network {
         if(this.G.get(v).size() > 0) {
             this.m -= this.G.get(v).size();
             this.G.replace(v, new LinkedHashSet<>());
-            this.Gu.replace(v, new LinkedHashSet<>());
             for(int i = 0; i < this.n; i++) {
-                this.Gu.get(i).remove(v);
+                this.G.get(i).remove(v);
             }
         }
     }
@@ -116,7 +107,7 @@ public class Network {
     public int numberOfComponents() {
         this.discovered = new boolean[this.n];
         int c = 0;
-        for (int u : this.Gu.keySet()) {
+        for (int u : this.G.keySet()) {
             if (!this.discovered[u]) {
                 c++;
                 this.numberOfComponentsR(u);
@@ -127,7 +118,7 @@ public class Network {
 
     private void numberOfComponentsR(int u) {
         this.discovered[u] = true;
-        for(int v : this.Gu.get(u)) {
+        for(int v : this.G.get(u)) {
             if(!this.discovered[v]) {
                 this.numberOfComponentsR(v);
             }
@@ -142,7 +133,7 @@ public class Network {
      */
     public boolean hasCycle() {
         this.discovered = new boolean[this.n];
-        for (int u : this.Gu.keySet()) {
+        for (int u : this.G.keySet()) {
             if(!this.discovered[u] && hasCycleR(u)) {
                 return true;
             }
@@ -152,7 +143,7 @@ public class Network {
 
     private boolean hasCycleR(int u) {
         this.discovered[u] = true;
-        for (int v : this.Gu.get(u)) {
+        for (int v : this.G.get(u)) {
             if (!this.discovered[v]) {
                 hasCycleR(v);
             } else {
@@ -186,7 +177,7 @@ public class Network {
         Q.add(start);
         while (!Q.isEmpty()) {
             int v = Q.pop();
-            for (int w : this.Gu.get(v)) {
+            for (int w : this.G.get(v)) {
                 if (!discovered[w]) {
                     distance[w] = distance[v] + 1;
                     if (w == end) {
@@ -231,7 +222,7 @@ public class Network {
         int children = 0;
         this.pre[v] = this.cnt++;
         this.low[v] = this.pre[v];
-        for(int w : this.Gu.get(v)) {
+        for(int w : this.G.get(v)) {
             if(this.pre[w] == -1) {
                 children++;
                 criticalNodesR(v, w);
