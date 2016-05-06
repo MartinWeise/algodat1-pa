@@ -134,19 +134,19 @@ public class Network {
     public boolean hasCycle() {
         this.discovered = new boolean[this.n];
         for (int u : this.G.keySet()) {
-            if(!this.discovered[u] && hasCycleR(u)) {
+            if(!this.discovered[u] && hasCycleR(u,u)) {
                 return true;
             }
         }
         return false;
     }
 
-    private boolean hasCycleR(int u) {
+    private boolean hasCycleR(int u, int v) {
         this.discovered[u] = true;
-        for (int v : this.G.get(u)) {
-            if (!this.discovered[v]) {
-                hasCycleR(v);
-            } else {
+        for (int w : this.G.get(u)) {
+            if (!this.discovered[w]) {
+                hasCycleR(w,u);
+            } else if (this.discovered[w] && v != w) { // self-loop? todo: check this!
                 return true;
             }
         }
