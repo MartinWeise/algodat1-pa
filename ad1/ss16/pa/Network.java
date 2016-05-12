@@ -106,7 +106,7 @@ public class Network {
                 if(hasCycleR(w, u)) {
                     return true;
                 }
-            } else if (this.discovered[w] && v != w) { // changed
+            } else if (this.discovered[w] && v != w) {
                 return true;
             }
         }
