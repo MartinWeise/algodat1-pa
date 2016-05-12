@@ -17,7 +17,7 @@ public class Network {
     public Network(int n) {
         this.n = n;
         this.m = 0;
-        for(int i = 0; i < n; i++) {
+        for (int i = 0; i < n; i++) {
             this.G.put(i, new LinkedHashSet<>());
         }
     }
@@ -31,7 +31,7 @@ public class Network {
     }
 
     public void addConnection(int v, int w) {
-        if(this.G.containsKey(v) && !this.G.get(v).contains(w) && v != w) {
+        if (this.G.containsKey(v) && !this.G.get(v).contains(w) && v != w) {
             this.m++;
             this.G.get(v).add(w);
             this.G.get(w).add(v);
@@ -40,8 +40,8 @@ public class Network {
 
     public void addAllConnections(int v) {
         int c = 0;
-        for(int u : this.G.keySet()) {
-            if(!this.G.get(v).contains(u) && u != v) {
+        for (int u : this.G.keySet()) {
+            if (!this.G.get(v).contains(u) && u != v) {
                 c++;
                 this.G.get(v).add(u);
                 this.G.get(u).add(v);
@@ -51,7 +51,7 @@ public class Network {
     }
 
     public void deleteConnection(int v, int w) {
-        if(this.G.containsKey(v) && this.G.get(v).contains(w)) {
+        if (this.G.containsKey(v) && this.G.get(v).contains(w)) {
             this.m--;
             this.G.get(v).remove(w);
             this.G.get(w).remove(v);
@@ -59,10 +59,10 @@ public class Network {
     }
 
     public void deleteAllConnections(int v) {
-        if(this.G.containsKey(v) && this.G.get(v).size() > 0) {
+        if (this.G.containsKey(v) && this.G.get(v).size() > 0) {
             this.m -= this.G.get(v).size();
             this.G.replace(v, new LinkedHashSet<>());
-            for(int i = 0; i < this.n; i++) {
+            for (int i = 0; i < this.n; i++) {
                 this.G.get(i).remove(v);
             }
         }
@@ -82,8 +82,8 @@ public class Network {
 
     private void numberOfComponentsR(int u) {
         this.discovered[u] = true;
-        for(int v : this.G.get(u)) {
-            if(!this.discovered[v]) {
+        for (int v : this.G.get(u)) {
+            if (!this.discovered[v]) {
                 this.numberOfComponentsR(v);
             }
         }
@@ -92,7 +92,7 @@ public class Network {
     public boolean hasCycle() {
         this.discovered = new boolean[this.n];
         for (int u : this.G.keySet()) {
-            if(!this.discovered[u] && hasCycleR(u,u)) {
+            if (!this.discovered[u] && hasCycleR(u, u)) {
                 return true;
             }
         }
@@ -103,7 +103,9 @@ public class Network {
         this.discovered[u] = true;
         for (int w : this.G.get(u)) {
             if (!this.discovered[w]) {
-                hasCycleR(w, u);
+                if(hasCycleR(w, u)) {
+                    return true;
+                }
             } else if (this.discovered[w] && v != w) { // changed
                 return true;
             }
@@ -112,10 +114,10 @@ public class Network {
     }
 
     public int minimalNumberOfConnections(int start, int end) {
-        if(this.m < 1) {
+        if (this.m < 1) {
             return -1;
         }
-        if(start == end) {
+        if (start == end) {
             return 0;
         }
         int[] distance = new int[this.n];
@@ -148,14 +150,14 @@ public class Network {
             this.low[v] = -1;
             this.pre[v] = -1;
         }
-        for(int v = 0; v < this.n; v++) {
+        for (int v = 0; v < this.n; v++) {
             if (this.pre[v] == -1) {
                 criticalNodesR(v, v);
             }
         }
         List<Integer> L = new LinkedList<>();
-        for(int i = 0; i < this.articulation.length; i++) {
-            if(this.articulation[i]) {
+        for (int i = 0; i < this.articulation.length; i++) {
+            if (this.articulation[i]) {
                 L.add(i);
             }
         }
@@ -166,15 +168,15 @@ public class Network {
         int children = 0;
         this.pre[v] = this.cnt++;
         this.low[v] = this.pre[v];
-        for(int w : this.G.get(v)) {
-            if(this.pre[w] == -1) {
+        for (int w : this.G.get(v)) {
+            if (this.pre[w] == -1) {
                 children++;
                 criticalNodesR(v, w);
                 this.low[v] = Math.min(this.low[v], this.low[w]);
-                if(this.low[w] >= this.pre[v] && u != v) {
+                if (this.low[w] >= this.pre[v] && u != v) {
                     this.articulation[v] = true;
                 }
-            } else if(w != u) {
+            } else if (w != u) {
                 this.low[v] = Math.min(this.low[v], this.pre[w]);
             }
         }
@@ -184,6 +186,3 @@ public class Network {
     }
 
 }
-
-
-
