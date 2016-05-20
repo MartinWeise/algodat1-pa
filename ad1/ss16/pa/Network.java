@@ -14,6 +14,11 @@ public class Network {
     private int cnt;
     private boolean[] articulation;
 
+    /**
+     * O(n)
+     * @param n: Integer
+     */
+
     public Network(int n) {
         this.n = n;
         this.m = 0;
@@ -22,14 +27,27 @@ public class Network {
         }
     }
 
+    /**
+     * O(1)
+     * @return n: Integer
+     */
     public int numberOfNodes() {
         return this.n;
     }
 
+    /**
+     * O(1)
+     * @return m: Integer
+     */
     public int numberOfConnections() {
         return m;
     }
 
+    /**
+     * O(n)
+     * @param v: Integer
+     * @param w: Integer
+     */
     public void addConnection(int v, int w) {
         if (this.G.containsKey(v) && !this.G.get(v).contains(w) && v != w) {
             this.m++;
@@ -38,6 +56,10 @@ public class Network {
         }
     }
 
+    /**
+     * O(n^2)
+     * @param v: Integer
+     */
     public void addAllConnections(int v) {
         int c = 0;
         for (int u : this.G.keySet()) {
@@ -50,6 +72,11 @@ public class Network {
         this.m += c;
     }
 
+    /**
+     * O(n)
+     * @param v: Integer
+     * @param w: Integer
+     */
     public void deleteConnection(int v, int w) {
         if (this.G.containsKey(v) && this.G.get(v).contains(w)) {
             this.m--;
@@ -58,6 +85,10 @@ public class Network {
         }
     }
 
+    /**
+     * O(n)
+     * @param v: Integer
+     */
     public void deleteAllConnections(int v) {
         if (this.G.containsKey(v) && this.G.get(v).size() > 0) {
             this.m -= this.G.get(v).size();
@@ -68,6 +99,10 @@ public class Network {
         }
     }
 
+    /**
+     * O(n+m)
+     * @return c: Integer
+     */
     public int numberOfComponents() {
         this.discovered = new boolean[this.n];
         int c = 0;
@@ -89,6 +124,10 @@ public class Network {
         }
     }
 
+    /**
+     * O(n+m)
+     * @return boolean
+     */
     public boolean hasCycle() {
         this.discovered = new boolean[this.n];
         for (int u : this.G.keySet()) {
@@ -113,6 +152,12 @@ public class Network {
         return false;
     }
 
+    /**
+     * O(n+m)
+     * @param start: Integer
+     * @param end: Integer
+     * @return Integer
+     */
     public int minimalNumberOfConnections(int start, int end) {
         if (this.m < 1) {
             return -1;
@@ -142,6 +187,10 @@ public class Network {
         return -1;
     }
 
+    /**
+     * O(n+m)
+     * @return List<Integer>
+     */
     public List<Integer> criticalNodes() {
         this.low = new int[this.n];
         this.pre = new int[this.n];
